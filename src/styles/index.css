@@ -1,0 +1,111 @@
+/* =========================================================
+   首頁跑馬燈：賽事快訊 Ticker（深色轉播條）
+   - 深海軍藍底 + 排球黃快訊標籤 + 螢光高光線
+   - 呼應即時比分記分板風格
+   ========================================================= */
+@keyframes marquee {
+	0% { transform: translateX(100%); }
+	100% { transform: translateX(-100%); }
+}
+
+/* 快訊標籤脈動點 */
+@keyframes marquee-blink {
+	0%, 100% { opacity: 1; transform: scale(1); }
+	50%      { opacity: 0.35; transform: scale(0.8); }
+}
+
+/* 整條 ticker bar */
+.marquee-bar {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.6rem 0.9rem;
+	margin-bottom: 1.5rem;
+	background: linear-gradient(135deg, #0B1B2E 0%, #12263F 100%);
+	border: 1px solid #1B3A5C; /* navy-700 */
+	border-radius: 0.9rem;
+	box-shadow: 0 10px 26px rgba(11, 27, 46, 0.28);
+	overflow: hidden;
+	text-align: left;
+}
+
+/* 頂部螢光高光線，與記分板卡片一致 */
+.marquee-bar::before {
+	content: "";
+	position: absolute;
+	top: 0; left: 0; right: 0;
+	height: 2px;
+	background: linear-gradient(90deg, #38BDF8, #FFC53D, #FB4E6D);
+	opacity: 0.9;
+}
+
+/* 快訊標籤：排球黃底深藍字 */
+.marquee-tag {
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.3rem 0.7rem;
+	background: #FFC53D;
+	color: #0B1B2E;
+	font-weight: 800;
+	font-size: 0.85rem;
+	letter-spacing: 0.04em;
+	border-radius: 0.5rem;
+	white-space: nowrap;
+}
+
+.marquee-tag-dot {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: #0B1B2E;
+	animation: marquee-blink 1.4s ease-in-out infinite;
+}
+
+/* 喇叭 icon */
+.marquee-icon {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	color: #FFD35C; /* vbyellow-300 */
+}
+
+/* 跑動區：左右淡出遮罩，文字滑入滑出更順 */
+.marquee-container {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	position: relative;
+	display: flex;
+	align-items: center;
+	height: 1.75rem;
+	-webkit-mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+	        mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+}
+
+.marquee-text {
+	animation: marquee 20s linear infinite;
+	white-space: nowrap;
+	font-size: 1.05rem;
+	font-weight: 600;
+	color: #E2E9F2; /* navy-100 */
+}
+
+/* 響應式調整 */
+@media (max-width: 768px) {
+	.marquee-text {
+		animation-duration: 15s;
+		font-size: 0.95rem;
+	}
+}
+
+@media (max-width: 480px) {
+	.marquee-bar { gap: 0.5rem; padding: 0.5rem 0.7rem; }
+	.marquee-tag { padding: 0.25rem 0.5rem; font-size: 0.78rem; }
+	.marquee-text {
+		animation-duration: 10s;
+		font-size: 0.85rem;
+	}
+}

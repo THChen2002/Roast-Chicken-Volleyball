@@ -1,0 +1,7 @@
+node_modules
+dist
+.DS_Store
+*.local
+# 切勿提交 Firebase service account 金鑰
+*firebase-adminsdk*.json
+service-account.json

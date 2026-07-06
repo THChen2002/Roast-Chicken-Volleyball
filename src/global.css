@@ -1,0 +1,11 @@
+/* React 根容器：撐滿視窗高度並讓頁尾貼底 */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* main 佔滿剩餘空間，footer 永遠在底部 */
+#root > main {
+  flex: 1;
+}

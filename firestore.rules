@@ -1,0 +1,80 @@
+rules_version = '2';
+
+// ============================================================
+// 烤雞盃 Firestore 安全規則（React 前端版）
+// 原則：賽事資料公開可讀；管理寫入僅限管理員。
+// 管理員判定：users/{uid}.permission == 'admin'（第一位 admin 請於 Console 直接設定）。
+// 例外：liveMatches 的「人氣投票」開放任何人更新，但僅限 votes 欄位。
+// ============================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 是否為管理員：登入後檢查 users/{uid} 文件的 permission 是否為 'admin'。
+    // 第一位 admin 因規則禁止使用者自行提權，請直接在 Firebase Console
+    // 建立 users/{uid} 文件並設 permission: 'admin'（Console 寫入會繞過安全規則）。
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permission == 'admin';
+    }
+
+    // 只動到 votes 欄位（給公開投票用）
+    function onlyVotesChanged() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes']);
+    }
+
+    // 使用者資料：本人或管理員可讀。
+    // 本人可建立／更新自己的資料，但「不得自行設定或變更 permission」（防止提權）；
+    // 變更 permission、寫入他人資料或刪除，皆僅限管理員。
+    match /users/{userId} {
+      allow read: if request.auth != null
+        && (request.auth.uid == userId || isAdmin());
+
+      allow create: if isAdmin() || (
+        request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.get('permission', 'user') == 'user'
+      );
+
+      allow update: if isAdmin() || (
+        request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.get('permission', 'user') == resource.data.get('permission', 'user')
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // 跑馬燈／公告：公開讀，僅管理員寫
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /announcements/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 賽程／成績／排名／隊伍：公開讀，僅管理員寫
+    match /results/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /roundResults/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /teams/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 即時比分：公開讀；管理員可完整寫入；
+    // 一般使用者僅能更新 votes（人氣投票）。
+    match /liveMatches/{docId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || onlyVotesChanged();
+    }
+  }
+}
