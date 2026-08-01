@@ -155,11 +155,17 @@ function EdgeBadge({ edge }) {
   const played = sets.length > 0;
   if (!played && !live) return null;
 
+  // 比分文字的左右順序要對齊「畫面上實際的左右位置」，不能沿用 a/b 在迴圈裡的順序
+  // （a、b 是依頂點編號 i<j 決定，不保證 a 畫在螢幕左邊——例如 F3、F4 對角時 a=F3 卻畫在右下）
+  const aIsLeft = a.x < b.x || (a.x === b.x && a.y < b.y);
+  const left = aIsLeft ? a : b;
+  const right = aIsLeft ? b : a;
+
   const [rawA] = m.seeds || m.teams || [];
   const [tA, tB] = tally(sets);
-  const aIsRawA = a.seed === rawA;
-  const scoreA = aIsRawA ? tA : tB;
-  const scoreB = aIsRawA ? tB : tA;
+  const leftIsRawA = left.seed === rawA;
+  const scoreA = leftIsRawA ? tA : tB;
+  const scoreB = leftIsRawA ? tB : tA;
 
   return (
     <div
@@ -180,7 +186,7 @@ function EdgeBadge({ edge }) {
         <div className="flex items-center gap-1 whitespace-nowrap">
           {sets.map((s, i) => {
             const [l, r] = String(s).split(':').map((n) => Number(n) || 0);
-            const [setA, setB] = aIsRawA ? [l, r] : [r, l];
+            const [setA, setB] = leftIsRawA ? [l, r] : [r, l];
             const isCurrent = live && i === sets.length - 1;
             return (
               <span

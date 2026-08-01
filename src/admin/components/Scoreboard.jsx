@@ -16,6 +16,9 @@ export default function Scoreboard({ match, teams = [], onFinished }) {
   const m = computeMatch(match.setScores);
   const [error, setError] = useState('');
   const [finishStatus, setFinishStatus] = useState('');
+  // 左右交換：僅影響畫面呈現順序，讓記分員可依現場實際左右邊調整，避免按錯加分按鈕
+  const [swapped, setSwapped] = useState(false);
+  const order = swapped ? [1, 0] : [0, 1];
 
   const assigned = !!match.matchNo;
   const teamNames = [match.teams?.[0] || '隊伍 A', match.teams?.[1] || '隊伍 B'];
@@ -173,15 +176,23 @@ export default function Scoreboard({ match, teams = [], onFinished }) {
           <div className="text-center pt-5">
             <p className="text-xs text-slate-400 tracking-widest">大比分（勝局）</p>
             <p className="font-display text-3xl font-bold text-navy-800 tabular-nums">
-              {m.wins[0]} <span className="text-slate-300">:</span> {m.wins[1]}
+              {m.wins[order[0]]} <span className="text-slate-300">:</span> {m.wins[order[1]]}
             </p>
           </div>
 
           {/* 計分區 */}
           <div className="flex items-start gap-4 sm:gap-8 px-5 py-6">
-            <TeamPanel team={0} />
-            <div className="self-center text-2xl font-bold text-slate-300 pt-8">VS</div>
-            <TeamPanel team={1} />
+            <TeamPanel team={order[0]} />
+            <button
+              type="button"
+              onClick={() => setSwapped((s) => !s)}
+              title="交換左右"
+              className="self-center flex flex-col items-center gap-1 mt-8 text-slate-400 hover:text-navy-700 border border-slate-200 hover:border-navy-300 rounded-xl px-3 py-2 transition-colors"
+            >
+              <i className="fa-solid fa-right-left text-lg" aria-hidden="true"></i>
+              <span className="text-[11px] font-medium">交換左右</span>
+            </button>
+            <TeamPanel team={order[1]} />
           </div>
 
           {/* 本局／全場狀態與動作 */}
